@@ -4,8 +4,7 @@ package com.github.noonmaru.invcaptive.plugin
 
 import com.google.common.collect.ImmutableList
 import net.minecraft.core.NonNullList
-import net.minecraft.world.entity.player.PlayerInventory
-import net.minecraft.world.item.ItemBlock
+import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.Blocks
 import org.bukkit.Bukkit
@@ -13,8 +12,8 @@ import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
-import org.bukkit.craftbukkit.v1_18_R2.entity.CraftPlayer
-import org.bukkit.craftbukkit.v1_18_R2.inventory.CraftItemStack
+import org.bukkit.craftbukkit.entity.CraftPlayer
+import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.entity.Player
 import kotlin.math.min
 
@@ -28,7 +27,7 @@ object InvCaptive {
     private val contents: List<NonNullList<ItemStack>>
 
     init {
-        val inv = PlayerInventory(null)
+        val inv = Inventory()
 
         this.items = inv.h
         this.armor = inv.i
@@ -82,7 +81,7 @@ object InvCaptive {
 
     fun patch(player: Player) {
         val entityplayer = (player as CraftPlayer).handle
-        val playerInv = entityplayer.fr()
+        val playerInv = entityplayer.inventory
 
         playerInv.setField(ITEMS, items)
         playerInv.setField(ARMOR, armor)
@@ -92,10 +91,10 @@ object InvCaptive {
     }
 
      fun captive() {
-        val item = ItemStack(Blocks.gB)
-        items.replaceAll { item.n() }
-        armor.replaceAll { item.n() }
-        extraSlots.replaceAll { item.n() }
+        val item = ItemStack(Blocks.BARRIER)
+        items.replaceAll { item.copy() }
+        armor.replaceAll { item.copy() }
+        extraSlots.replaceAll { item.copy() }
         items[0] = ItemStack.b
 
         for (player in Bukkit.getOnlinePlayers()) {
@@ -127,7 +126,7 @@ object InvCaptive {
         val current = this[index]
         val currentItem = current.c()
 
-        if (currentItem is ItemBlock && currentItem.e() == Blocks.gB) {
+        if (currentItem is Blocks && currentItem.e() == Blocks.gB) {
             this[index] = item.n()
             return true
         }
