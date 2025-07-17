@@ -1,7 +1,7 @@
 package com.github.noonmaru.invcaptive.plugin
 
-import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
+import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -10,6 +10,7 @@ import org.bukkit.entity.Firework
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
+
 import org.bukkit.event.entity.*
 import org.bukkit.event.inventory.InventoryAction
 import org.bukkit.event.inventory.InventoryClickEvent
@@ -35,7 +36,7 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(this, this)
         loadInventory()
 
-        val list = Material.entries.filter { it.isBlock && !it.isAir && it.hardness in 0.0F..50.0F }.shuffled(Random(seed))
+        val list = Material.values().filter { it.isBlock && !it.isAir && it.hardness in 0.0F..50.0F }.shuffled(Random(seed))
         val count = 9 * 4 + 5
 
         val map = EnumMap<Material, Int>(Material::class.java)
@@ -111,12 +112,12 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
             return
         }
 
-        if (event.cursor.type == Material.BARRIER) {
+        if (event.cursor?.type == Material.BARRIER) {
             event.isCancelled = true
             return
         }
 
-        if (event.action != InventoryAction.NOTHING) {
+        if (event.action == InventoryAction.HOTBAR_SWAP || event.action == InventoryAction.HOTBAR_MOVE_AND_READD || event.action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
             if (event.hotbarButton > -1 && event.whoClicked.inventory.getItem(event.hotbarButton)?.type == Material.BARRIER) {
                 event.isCancelled = true
             }
@@ -137,17 +138,15 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
                 for (player in Bukkit.getOnlinePlayers()) {
                     player.world.spawn(player.location, Firework::class.java)
                 }
-            }
 
                 Bukkit.broadcastMessage(
-                    "${NamedTextColor.RED}${event.player.name}${NamedTextColor.WHITE}님이 ${NamedTextColor.GOLD}${
-                        event.block.translationKey().removePrefix("block.minecraft.")
-                    } ${NamedTextColor.WHITE}블록을 파괴하여 인벤토리 잠금이 한칸 해제되었습니다!"
+                    "${ChatColor.RED}${event.player.name}${ChatColor.RESET}님이 ${ChatColor.GOLD}${
+                        event.block.translationKey.removePrefix("block.minecraft.")
+                    } ${ChatColor.RESET}블록을 파괴하여 인벤토리 잠금이 한칸 해제되었습니다!"
                 )
-
             }
         }
-
+    }
 
     @EventHandler
     fun onInteract(event: PlayerInteractEvent) {
@@ -158,7 +157,7 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
 
     @EventHandler
     fun onSwap(event: PlayerSwapHandItemsEvent) {
-        if (event.offHandItem.type == Material.BARRIER || event.mainHandItem.type == Material.BARRIER) {
+        if (event.offHandItem?.type == Material.BARRIER || event.mainHandItem?.type == Material.BARRIER) {
             event.isCancelled = true
         }
     }
@@ -183,6 +182,7 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         InvCaptive.captive()
+
         return true
     }
- }
+}

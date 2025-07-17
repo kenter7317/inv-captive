@@ -1,7 +1,7 @@
 name: $pluginName
 main: $pluginMain
-depend: [ ProtocolLib ]
-api-version: '1.21'
+depend: [ Kotlin, ProtocolLib ]
+api-version: '1.17'
 version: $version
 
 commands:
@@ -11,4 +11,3 @@ commands:
 libraries:
   - org.jetbrains.kotlin:kotlin-stdlib:1.7.0
   - org.jetbrains.kotlin:kotlin-reflect:1.7.0
-

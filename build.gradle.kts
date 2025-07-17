@@ -3,6 +3,7 @@ import de.undercouch.gradle.tasks.download.Download
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
+
     kotlin("jvm") version "2.2.0"
     id("com.gradleup.shadow") version "8.3.0+"
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.18"
@@ -24,7 +25,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation("com.github.noonmaru:tap:3.2.7")
     implementation("com.github.noonmaru:kommand:0.6.4")
-
     paperweight.paperDevBundle("1.21.7-R0.1-SNAPSHOT")
 }
 
