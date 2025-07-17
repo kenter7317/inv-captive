@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.github.noonmaru.invcaptive.plugin
 
 import com.google.common.collect.ImmutableList
@@ -27,17 +25,17 @@ object InvCaptive {
     private val contents: List<NonNullList<ItemStack>>
 
     init {
-        val inv = Inventory()
+        val inv = Inventory(null, null)
 
-        this.items = inv.h
-        this.armor = inv.i
-        this.extraSlots = inv.j
+        this.items = inv.contents as NonNullList<ItemStack>
+        this.armor = inv.armorContents as NonNullList<ItemStack>
+        this.extraSlots = inv.extraContent as NonNullList<ItemStack>
         this.contents = ImmutableList.of(items, armor, extraSlots)
     }
 
-    private const val ITEMS = "h"
-    private const val ARMOR = "i"
-    private const val EXTRA_SLOTS = "j"
+    private const val ITEMS = "items"
+    private const val ARMOR = "armor"
+    private const val EXTRA_SLOTS = "extraSlots"
 
     fun load(yaml: YamlConfiguration) {
         yaml.loadItemStackList(ITEMS, items)
@@ -49,7 +47,6 @@ object InvCaptive {
     private fun ConfigurationSection.loadItemStackList(name: String, list: NonNullList<ItemStack>) {
         val map = getMapList(name)  // List<Map<String, Object>>
         val items = map.map { CraftItemStack.asNMSCopy(CraftItemStack.deserialize(it as Map<String, Any>)) }
-
 
         for (i in 0 until min(list.count(), items.count())) {
             list[i] = items[i]
@@ -65,7 +62,6 @@ object InvCaptive {
 
         return yaml
     }
-
 
     private fun ConfigurationSection.setItemStackList(name: String, list: NonNullList<ItemStack>) {
         set(name, list.map { CraftItemStack.asCraftMirror(it).serialize() })
@@ -86,7 +82,7 @@ object InvCaptive {
         playerInv.setField(ITEMS, items)
         playerInv.setField(ARMOR, armor)
         playerInv.setField(EXTRA_SLOTS, extraSlots)
-        playerInv.setField("n", contents)
+        playerInv.setField("f", contents)
 
     }
 
@@ -95,7 +91,7 @@ object InvCaptive {
         items.replaceAll { item.copy() }
         armor.replaceAll { item.copy() }
         extraSlots.replaceAll { item.copy() }
-        items[0] = ItemStack.b
+        items[0] = ItemStack.EMPTY
 
         for (player in Bukkit.getOnlinePlayers()) {
             player.updateInventory()
@@ -124,10 +120,10 @@ object InvCaptive {
 
     private fun NonNullList<ItemStack>.replaceBarrier(index: Int, item: ItemStack): Boolean {
         val current = this[index]
-        val currentItem = current.c()
+        val currentMirror = current.asBukkitMirror()
 
-        if (currentItem is Blocks && currentItem.e() == Blocks.gB) {
-            this[index] = item.n()
+        if (currentMirror.type.isBlock && currentMirror.type.asBlockType() == Blocks.BARRIER) {
+            this[index] = item.copy()
             return true
         }
         return false
