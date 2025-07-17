@@ -1,11 +1,8 @@
-@file:Suppress("DEPRECATION")
-
 package com.github.noonmaru.invcaptive.plugin
 
 import com.google.common.collect.ImmutableList
 import net.minecraft.core.NonNullList
-import net.minecraft.world.entity.player.PlayerInventory
-import net.minecraft.world.item.ItemBlock
+import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.Blocks
 import org.bukkit.Bukkit
@@ -13,8 +10,8 @@ import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
-import org.bukkit.craftbukkit.v1_19_R2.entity.CraftPlayer
-import org.bukkit.craftbukkit.v1_19_R2.inventory.CraftItemStack
+import org.bukkit.craftbukkit.entity.CraftPlayer
+import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.entity.Player
 import kotlin.math.min
 
@@ -30,17 +27,17 @@ object InvCaptive {
 
 
     init {
-        val inv = PlayerInventory(null)
+        val inv = Inventory(null, null)
 
-        this.items = inv.h
-        this.armor = inv.i
-        this.extraSlots = inv.j
+        this.items = inv.contents as NonNullList<ItemStack>
+        this.armor = inv.armorContents as NonNullList<ItemStack>
+        this.extraSlots = inv.extraContent as NonNullList<ItemStack>
         this.contents = ImmutableList.of(items, armor, extraSlots)
     }
 
-    private const val ITEMS = "h"
-    private const val ARMOR = "i"
-    private const val EXTRA_SLOTS = "j"
+    private const val ITEMS = "items"
+    private const val ARMOR = "armor"
+    private const val EXTRA_SLOTS = "extraSlots"
 
     fun load(yaml: YamlConfiguration) {
         yaml.loadItemStackList(ITEMS, items)
@@ -52,7 +49,6 @@ object InvCaptive {
     private fun ConfigurationSection.loadItemStackList(name: String, list: NonNullList<ItemStack>) {
         val map = getMapList(name)  // List<Map<String, Object>>
         val items = map.map { CraftItemStack.asNMSCopy(CraftItemStack.deserialize(it as Map<String, Any>)) }
-
 
         for (i in 0 until min(list.count(), items.count())) {
             list[i] = items[i]
@@ -69,7 +65,6 @@ object InvCaptive {
         return yaml
     }
 
-
     private fun ConfigurationSection.setItemStackList(name: String, list: NonNullList<ItemStack>) {
         set(name, list.map { CraftItemStack.asCraftMirror(it).serialize() })
     }
@@ -84,21 +79,21 @@ object InvCaptive {
 
     fun patch(player: Player) {
         val entityplayer = (player as CraftPlayer).handle
-        val playerInv = entityplayer.fE()
-
+        val playerInv = entityplayer.inventory
+      
         playerInv.setField(ITEMS, items)
         playerInv.setField(ARMOR, armor)
         playerInv.setField(EXTRA_SLOTS, extraSlots)
-        playerInv.setField("n", contents)
+        playerInv.setField("f", contents)
 
     }
 
      fun captive() {
-        val item = ItemStack(Blocks.hC)
-        items.replaceAll { item.o() }
-        armor.replaceAll { item.o() }
-        extraSlots.replaceAll { item.o() }
-        items[0] = ItemStack.b
+        val item = ItemStack(Blocks.BARRIER)
+        items.replaceAll { item.copy() }
+        armor.replaceAll { item.copy() }
+        extraSlots.replaceAll { item.copy() }
+        items[0] = ItemStack.EMPTY
 
         for (player in Bukkit.getOnlinePlayers()) {
             player.updateInventory()
@@ -127,10 +122,11 @@ object InvCaptive {
 
     private fun NonNullList<ItemStack>.replaceBarrier(index: Int, item: ItemStack): Boolean {
         val current = this[index]
-        val currentItem = current.c()
+        val currentMirror = current.asBukkitMirror()
+        
+        if (currentMirror.type.isBlock && currentMirror.type.asBlockType() == Blocks.BARRIER) {
+            this[index] = item.copy()
 
-        if (currentItem is ItemBlock && currentItem.e() == Blocks.hC) {
-            this[index] = item.o()
             return true
         }
         return false
