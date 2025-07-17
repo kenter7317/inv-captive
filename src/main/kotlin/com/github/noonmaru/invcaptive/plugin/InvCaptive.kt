@@ -2,6 +2,7 @@ package com.github.noonmaru.invcaptive.plugin
 
 import com.google.common.collect.ImmutableList
 import net.minecraft.core.NonNullList
+import net.minecraft.world.entity.EntityEquipment
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.Blocks
@@ -13,6 +14,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.entity.Player
+import org.checkerframework.checker.units.qual.C
 import kotlin.math.min
 
 object InvCaptive {
@@ -27,12 +29,18 @@ object InvCaptive {
 
 
     init {
-        val inv = Inventory(null, null)
+        val inv = Inventory(null, EntityEquipment())
 
-        this.items = inv.contents as NonNullList<ItemStack>
-        this.armor = inv.armorContents as NonNullList<ItemStack>
-        this.extraSlots = inv.extraContent as NonNullList<ItemStack>
+        this.items = inv.contents.toNonNullList()
+        this.armor = inv.armorContents.toNonNullList()
+        this.extraSlots = inv.extraContent.toNonNullList()
         this.contents = ImmutableList.of(items, armor, extraSlots)
+    }
+
+    fun List<ItemStack>.toNonNullList(): NonNullList<ItemStack> {
+        var list = NonNullList.create<ItemStack>()
+        list.addAll(this)
+        return list
     }
 
     private const val ITEMS = "items"
