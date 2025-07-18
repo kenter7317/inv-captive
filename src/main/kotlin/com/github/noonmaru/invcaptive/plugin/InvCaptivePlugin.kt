@@ -2,6 +2,7 @@ package com.github.noonmaru.invcaptive.plugin
 
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
+import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -137,12 +138,11 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
                 for (player in Bukkit.getOnlinePlayers()) {
                     player.world.spawn(player.location, Firework::class.java)
                 }
-            }
 
                 Bukkit.broadcastMessage(
-                    "${NamedTextColor.RED}${event.player.name}${NamedTextColor.WHITE}님이 ${NamedTextColor.GOLD}${
+                    "${ChatColor.RED}${event.player.name}${ChatColor.WHITE}님이 ${ChatColor.GOLD}${
                         event.block.translationKey().removePrefix("block.minecraft.")
-                    } ${NamedTextColor.WHITE}블록을 파괴하여 인벤토리 잠금이 한칸 해제되었습니다!"
+                    } ${ChatColor.WHITE}블록을 파괴하여 인벤토리 잠금이 한칸 해제되었습니다!"
                 )
 
             }
