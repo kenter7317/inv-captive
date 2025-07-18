@@ -147,7 +147,7 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
 
             }
         }
-
+    }
 
     @EventHandler
     fun onInteract(event: PlayerInteractEvent) {
