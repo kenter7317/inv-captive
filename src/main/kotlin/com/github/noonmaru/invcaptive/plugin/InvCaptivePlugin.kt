@@ -148,7 +148,7 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
             if (InvCaptive.release(it)) {
                 for (player in Bukkit.getOnlinePlayers()) {
                     player.world.spawn(player.location, Firework::class.java)
-                    InvCaptive.patch(player)
+                    player.updateInventory()
                 }
 
                 Bukkit.broadcastMessage(

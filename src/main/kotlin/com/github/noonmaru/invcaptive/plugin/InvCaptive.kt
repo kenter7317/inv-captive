@@ -119,7 +119,6 @@ private fun NonNullList<ItemStack>.replaceBarrier(index: Int, item: ItemStack): 
 
     if (currentMirror.type.isBlock && currentMirror.type.asBlockType() == Blocks.BARRIER) {
         this[index] = item.copy()
-
         return true
     }
     return false
