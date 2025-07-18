@@ -14,7 +14,6 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.entity.Player
-import org.checkerframework.checker.units.qual.C
 import kotlin.math.min
 
 object InvCaptive {
