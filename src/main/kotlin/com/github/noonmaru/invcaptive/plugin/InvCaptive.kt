@@ -26,7 +26,6 @@ object InvCaptive {
     private val contents: List<NonNullList<ItemStack>>
 
 
-
     init {
         val inv = Inventory(null, EntityEquipment())
 
@@ -87,15 +86,11 @@ object InvCaptive {
     fun patch(player: Player) {
         val entityplayer = (player as CraftPlayer).handle
         val playerInv = entityplayer.inventory
-      
-        playerInv.setField(ITEMS, items)
-        playerInv.setField(ARMOR, armor)
-        playerInv.setField(EXTRA_SLOTS, extraSlots)
-        playerInv.setField("f", contents)
 
+        playerInv.setField(ITEMS, items)
     }
 
-     fun captive() {
+    fun captive() {
         val item = ItemStack(Blocks.BARRIER)
         items.replaceAll { item.copy() }
         armor.replaceAll { item.copy() }
@@ -114,28 +109,19 @@ object InvCaptive {
     })
 
     fun release(slot: Int): Boolean {
-        return when {
-            slot < 36 -> {
-                items.replaceBarrier(slot, releaseSlotItem)
-            }
-            slot < 40 -> {
-                armor.replaceBarrier(slot - 36, releaseSlotItem)
-            }
-            else -> {
-                extraSlots.replaceBarrier(slot - 40, releaseSlotItem)
-            }
-        }
+        return items.replaceBarrier(slot, releaseSlotItem)
     }
 
-    private fun NonNullList<ItemStack>.replaceBarrier(index: Int, item: ItemStack): Boolean {
-        val current = this[index]
-        val currentMirror = current.asBukkitMirror()
-        
-        if (currentMirror.type.isBlock && currentMirror.type.asBlockType() == Blocks.BARRIER) {
-            this[index] = item.copy()
 
-            return true
-        }
-        return false
+private fun NonNullList<ItemStack>.replaceBarrier(index: Int, item: ItemStack): Boolean {
+    val current = this[index]
+    val currentMirror = current.asBukkitMirror()
+
+    if (currentMirror.type.isBlock && currentMirror.type.asBlockType() == Blocks.BARRIER) {
+        this[index] = item.copy()
+
+        return true
     }
+    return false
+}
 }

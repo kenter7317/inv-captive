@@ -1,6 +1,5 @@
 package com.github.noonmaru.invcaptive.plugin
 
-import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Material
@@ -17,7 +16,9 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.*
 import org.bukkit.event.world.WorldSaveEvent
 import org.bukkit.plugin.java.JavaPlugin
+import org.yaml.snakeyaml.Yaml
 import java.io.File
+import java.io.FileWriter
 import java.util.*
 import kotlin.random.Random.Default.nextLong
 
@@ -36,7 +37,8 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(this, this)
         loadInventory()
 
-        val list = Material.entries.filter { it.isBlock && !it.isAir && it.hardness in 0.0F..50.0F }.shuffled(Random(seed))
+        val list =
+            Material.entries.filter { it.isBlock && !it.isAir && it.hardness in 0.0F..50.0F }.shuffled(Random(seed))
         val count = 9 * 4 + 5
 
         val map = EnumMap<Material, Int>(Material::class.java)
@@ -46,7 +48,7 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
         }
 
         this.slotsByType = map
-
+        outMaterial()
         for (player in Bukkit.getOnlinePlayers()) {
             InvCaptive.patch(player)
         }
@@ -54,6 +56,15 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
 
     override fun onDisable() {
         save()
+    }
+
+    private fun outMaterial() {
+        val folder = dataFolder.also { it.mkdirs() }
+        val list = slotsByType
+        val yml = Yaml()
+        val writer = FileWriter("$folder/dump.yaml")
+
+        yml.dump(list, writer)
     }
 
     private fun loadSeed(): Long {
@@ -137,6 +148,7 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
             if (InvCaptive.release(it)) {
                 for (player in Bukkit.getOnlinePlayers()) {
                     player.world.spawn(player.location, Firework::class.java)
+                    InvCaptive.patch(player)
                 }
 
                 Bukkit.broadcastMessage(
@@ -144,7 +156,6 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
                         event.block.translationKey().removePrefix("block.minecraft.")
                     } ${ChatColor.WHITE}블록을 파괴하여 인벤토리 잠금이 한칸 해제되었습니다!"
                 )
-
             }
         }
     }
@@ -152,6 +163,15 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
     @EventHandler
     fun onInteract(event: PlayerInteractEvent) {
         if (event.item?.type == Material.BARRIER) {
+            event.isCancelled = true
+        }
+    }
+
+    @EventHandler
+    fun onItemSpawn(event: ItemSpawnEvent) {
+        val item = event.entity.itemStack
+
+        if (item.type == Material.BARRIER) {
             event.isCancelled = true
         }
     }
@@ -185,4 +205,4 @@ class InvCaptivePlugin : JavaPlugin(), Listener {
         InvCaptive.captive()
         return true
     }
- }
+}
